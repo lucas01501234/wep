@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ultimate Bitcoin Clicker V2</title>
+    <style>
+        :root {
+            --primary: #f7931a;
+            --secondary: #16213e;
+            --accent: #4caf50;
+            --background: #0a0e17;
+            --text: #e0e0e0;
+            --danger: #ff4444;
+            --success: #4caf50;
+            --warning: #ffd700;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shine {
+            0% { background-position: -100% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            background: linear-gradient(-45deg, #0a0e17, #1a1f2c, #16213e, #1a237e);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            background: rgba(22, 33, 62, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 400px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            animation: shine 3s infinite;
+        }
+
+        .bitcoin-logo {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            margin: 20px auto;
+            filter: drop-shadow(0 0 10px rgba(247, 147, 26, 0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .bitcoin-logo:active {
+            transform: scale(0.9) rotate(-10deg);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(45deg, var(--primary), darken(var(--primary), 20%));
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .button:hover::before {
+            left: 100%;
+        }
+
+        .button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .multiplier-btn {
+            background: linear-gradient(45deg, var(--accent), darken(var(--accent), 20%));
+        }
+
+        .mystery-btn {
+            background: linear-gradient(45deg, #9c27b0, #6a0080);
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #ffd700);
+            width: 0%;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            animation: shine 2s infinite;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: rgba(22, 33, 62, 0.95);
+            color: white;
+            transform: translateX(150%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .achievements {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+
+        .achievement-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .achievement-item:hover {
+            transform: translateX(5px);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .stats-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .power-ups {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .power-up {
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .power-up:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.1);
+        }
+
+        @keyframes coinDrop {
+            0% { transform: translateY(-20px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(20px); opacity: 0; }
+        }
+
+        .coin-animation {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            animation: coinDrop 1s forwards;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Tema oscuro para scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: darken(var(--primary), 10%);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Bitcoin Clicker V2</h1>
+        
+        <svg class="bitcoin-logo" viewBox="0 0 64 64" id="clickButton">
+            <circle cx="32" cy="32" r="32" fill="#f7931a"/>
+            <path d="M44 24.2c-.7-4.8-4.9-6.4-10.5-6.9l-1-4.1-2.4.6.9 4c-.6.2-1.3.3-2 .5l-1-3.9-2.4.6 1 4.1c-.5.1-1 .2-1.5.4l-3.2.8.6 2.5s1.8-.4 1.7-.4c1-.2 1.4.3 1.6.8l1.1 4.5c.1 0 .2 0 .3.1-.1 0-.2 0-.3-.1l1.6 6.3c0 .3 0 .8-.6.9.1 0-1.7.4-1.7.4l.2 2.9 3-.8c.6-.1 1.1-.3 1.7-.4l1 4.1 2.4-.6-1-4.1c.7-.2 1.3-.3 2-.5l1 4.1 2.4-.6-1-4.1c4.6-.9 7.7-2.8 7.2-7.1-.4-3.4-2-4.5-4.2-4.5 1.4-.7 2.2-1.9 1.8-4.3zm-2.7 8.8c.5 3.9-5.8 4.4-7.9 4.9l-1.4-5.6c2.1-.5 8.7-1.6 9.3.7zm-3.2-7.9c.4 3.6-4.8 3.9-6.5 4.3l-1.3-5.1c1.7-.4 6.9-1.4 7.8.8z" fill="white"/>
+        </svg>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Bitcoin</h3>
+                <p class="stats-value" id="bitcoinTotal">0.00000</p>
+            </div>
+            <div class="stat-card">
+                <h3>Clics</h3>
+                <p class="stats-value" id="clickCount">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>BTC/Clic</h3>
+                <p class="stats-value" id="btcPerClick">0.00001</p>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <p id="progressText">Próxima meta: 1 BTC</p>
+        </div>
+
+        <div class="power-ups">
+            <div id="multiplicadorSection" class="hidden">
+                <button class="button multiplier-btn" id="multiplicadorButton">
+                    Multiplicador (1 BTC)
+                </button>
+            </div>
+            <div id="mysteryBagSection" class="hidden">
+                <button class="button mystery-btn" id="mysteryBagButton">
+                    Bolsa Misteriosa (20 BTC)
+                </button>
+            </div>
+        </div>
+
+        <div class="achievements">
+            <h3>🏆 Logros</h3>
+            <div id="achievementsList"></div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        let bitcoinTotal = 0;
+        let multiplicadorComprado = false;
+        let clickCount = 0;
+        let achievements = new Set();
+        let combo = 0;
+        let lastClickTime = 0;
+
+        const elements = {
+            bitcoinTotal: document.getElementById('bitcoinTotal'),
+            clickCount: document.getElementById('clickCount'),
+            btcPerClick: document.getElementById('btcPerClick'),
+            multiplicadorSection: document.getElementById('multiplicadorSection'),
+            mysteryBagSection: document.getElementById('mysteryBagSection'),
+            progressBar: document.getElementById('progressBar'),
+            progressText: document.getElementById('progressText'),
+            notification: document.getElementById('notification'),
+            achievementsList: document.getElementById('achievementsList')
+        };
+
+        function createCoinAnimation(x, y, amount) {
+            const coin = document.createElement('div');
+            coin.className = 'coin-animation';
+            coin.style.left = `${x}px`;
+            coin.style.top = `${y}px`;
+            coin.textContent = `+${amount.toFixed(5)} BTC`;
+            document.body.appendChild(coin);
+            
+            coin.addEventListener('animationend', () => {
+                coin.remove();
+            });
+        }
+
+        function showNotification(message, color = '#4caf50') {
+            elements.notification.style.background = color;
+            elements.notification.textContent = message;
+            elements.notification.style.transform = 'translateX(0)';
+            setTimeout(() => {
+                elements.notification.style.transform = 'translateX(150%)';
+            }, 3000);
+        }
+
+        function updateProgressBar() {
+            const nextGoal = multiplicadorComprado ? 20 : 1;
+            const progress = (bitcoinTotal / nextGoal) * 100;
+            elements.progressBar.style.width = `${Math.min(progress, 100)}%`;
+            elements.progressText.textContent = `Próxima meta: ${nextGoal} BTC`;
+        }
+
+        function addAchievement(title, description) {
+            if (!achievements.has(title)) {
+                achievements.add(title);
+                const achievementElement = document.createElement('div');
+                achievementElement.className = 'achievement-item';
+                achievementElement.innerHTML = `<p>🏆 ${title}: ${description}</p>`;
+                elements.achievementsList.appendChild(achievementElement);
+                showNotification(`¡Logro desbloqueado: ${title}!`, '#ffd700');
+            }
+        }
+
+        function checkAchievements() {
+            if (clickCount >= 100) addAchievement('Clickeador Novato', '100 clics');
+            if (clickCount >= 1000) addAchievement('Clickeador Profesional', '1000 clics');
+            if (bitcoinTotal >= 1) addAchievement('Primer Bitcoin', 'Alcanzaste 1 BTC');
+            if (bitcoinTotal >= 50) addAchievement('Ballena Bitcoin', 'Alcanzaste 50 BTC');
+            if (multiplicadorComprado) addAchievement('Potenciado', 'Compraste el multiplicador');
+        }
+
+        function actualizarBitcoin(cantidad) {
+            bitcoinTotal += cantidad;
+            elements.bitcoinTotal.textContent = bitcoinTotal.toFixed(5);
+            elements.bitcoinTotal.classList.add('pulse');
+            setTimeout(() => elements.bitcoinTotal.classList.remove('pulse'), 500);
+
+            // Crear animación de monedas
+            createCoinAnimation(window.innerWidth / 2, window.innerHeight / 2, cantidad);
+
+            if (bitcoinTotal >= 1 && !multiplicadorComprado) {
+                elements.multiplicadorSection.classList.remove('hidden');
+            }
+            if (bitcoinTotal >= 20)
+            if (bitcoinTotal >= 20) {
+                elements.mysteryBagSection.classList.remove('hidden');
+            }
+
+            updateProgressBar();
+            checkAchievements();
+        }
+
+        document.getElementById('clickButton').addEventListener('click', () => {
+            clickCount++;
+            elements.clickCount.textContent = clickCount;
+            const cantidadGanada = multiplicadorComprado ? 0.00002 : 0.00001;
+            actualizarBitcoin(cantidadGanada);
+        });
+
+        document.getElementById('multiplicadorButton').addEventListener('click', () => {
+            if (bitcoinTotal >= 1) {
+                bitcoinTotal -= 1;
+                multiplicadorComprado = true;
+                elements.multiplicadorSection.classList.add('hidden');
+                elements.bitcoinTotal.textContent = bitcoinTotal.toFixed(5);
+                showNotification('¡Multiplicador activado!');
+                updateProgressBar();
+            } else {
+                showNotification('Bitcoin insuficiente', '#ff4444');
+            }
+        });
+
+        document.getElementById('mysteryBagButton').addEventListener('click', () => {
+            if (bitcoinTotal >= 20) {
+                bitcoinTotal -= 20;
+                const probabilidad = Math.random() * 100;
+
+                if (probabilidad < 1) {
+                    actualizarBitcoin(40);
+                    showNotification('¡PREMIO MAYOR! +40 BTC', '#ffd700');
+                } else if (probabilidad < 40) {
+                    actualizarBitcoin(5);
+                    showNotification('¡Ganaste 5 BTC!', '#4caf50');
+                } else if (probabilidad < 85) {
+                    actualizarBitcoin(1);
+                    showNotification('¡Ganaste 1 BTC!', '#2196f3');
+                } else {
+                    showNotification('Perdiste 20 BTC', '#ff4444');
+                }
+
+                elements.bitcoinTotal.textContent = bitcoinTotal.toFixed(5);
+                updateProgressBar();
+            } else {
+                showNotification('Bitcoin insuficiente', '#ff4444');
+            }
+        });
+
+        // Inicializar barra de progreso
+        updateProgressBar();
+
+        // Guardar progreso automáticamente
+        setInterval(() => {
+            localStorage.setItem('bitcoinClickerSave', JSON.stringify({
+                bitcoinTotal,
+                multiplicadorComprado,
+                clickCount,
+                achievements: Array.from(achievements)
+            }));
+        }, 5000);
+
+        // Cargar progreso guardado
+        const savedGame = localStorage.getItem('bitcoinClickerSave');
+        if (savedGame) {
+            const save = JSON.parse(savedGame);
+            bitcoinTotal = save.bitcoinTotal;
+            multiplicadorComprado = save.multiplicadorComprado;
+            clickCount = save.clickCount;
+            achievements = new Set(save.achievements);
+            elements.bitcoinTotal.textContent = bitcoinTotal.toFixed(5);
+            elements.clickCount.textContent = clickCount;
+            updateProgressBar();
+            save.achievements.forEach(achievement => {
+                addAchievement(achievement.title, achievement.description);
+            });
+        }
+    </script>
+</body>
+</html>
+
